@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status,HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from app.schemas import user_schema
 from app.services.user_service import UserService
-
+from app import oauth2,utils
+from app.models import models
 api = APIRouter(prefix="/users", tags=["Users"])
 
 
@@ -15,6 +16,31 @@ def get_users(db: Session = Depends(get_db)):
 @api.post("/", status_code=status.HTTP_201_CREATED, response_model=user_schema.UserResponse)
 def create_user(user: user_schema.UserCreate, db: Session = Depends(get_db)):
     return UserService.create(db, user)
+
+
+@api.post("/login", response_model=user_schema.Token)
+def login(user_credentials: user_schema.UserLogin, db: Session = Depends(get_db)):
+
+    user = db.query(models.User).filter(
+        models.User.email == user_credentials.email
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=403, detail="Invalid Credentials")
+
+    if not utils.verify(user_credentials.password, user.password):
+        raise HTTPException(status_code=403, detail="Invalid Credentials")
+
+    access_token = oauth2.create_access_token(
+        data={"user_id": user.user_id}
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
+
 
 
 @api.get("/{user_id}", response_model=user_schema.UserResponse)
@@ -30,3 +56,5 @@ def update_user(user_id: int, user: user_schema.UserUpdate, db: Session = Depend
 @api.delete("/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     return UserService.delete(db, user_id)
+
+

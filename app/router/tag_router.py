@@ -22,7 +22,7 @@ models.Base.metadata.create_all(bind=engine)
 
 @api.get("/get_tag/by-user/{user_id}")
 def get_tags_by_user(user_id: int, db: Session = Depends(get_db)):
-#
+
     post=TagService.get_tags_by_user(db,user_id)
     return post
 
