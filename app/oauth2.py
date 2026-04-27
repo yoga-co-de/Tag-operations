@@ -12,6 +12,7 @@
 #     to_encode.update({"exp": expire})
 
 #     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)----->only login and get jwt token
+
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, status
