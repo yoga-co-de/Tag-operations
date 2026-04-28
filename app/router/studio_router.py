@@ -14,7 +14,7 @@ def get_studios(db: Session = Depends(get_db),current_user=Depends(oauth2.get_cu
 
 
 @api.post("/", status_code=status.HTTP_201_CREATED, response_model=studio_schema.StudioResponse)
-def create_studio(studio: studio_schema.StudioCreate, db: Session = Depends(get_db),current_user=Depends(oauth2.get_current_user)):
+def create_studio(studio: studio_schema.StudioCreate, db: Session = Depends(get_db)):
     return StudioService.create(db, studio)
 
 
